@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import warnings
 import pickle
+import joblib
 
 warnings.filterwarnings('ignore')
 
@@ -47,7 +48,7 @@ X_scaled = scaler.fit_transform(X_selected)
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.3, random_state=42)
 
-##
+## training classififer
 from sklearn.ensemble import RandomForestClassifier
 clf_RF = RandomForestClassifier()
 clf_RF.fit(X_train, y_train)
@@ -66,8 +67,5 @@ print("Confusion Matrix : \n\n" , confusion_matrix(predictions,y_test))
 print("Classification Report : \n\n" , classification_report(predictions,y_test),"\n")
 
 
-pickle.dump(clf_RF, open('random_forest_model', 'wb'))
-pickle.dump(scaler, open('scaler', 'wb'))
-
-model = pickle.load(open('random_forest_model', 'rb'))
+model = pickle.load(open('random_forest_model.joblib', 'rb'))
 print(model)

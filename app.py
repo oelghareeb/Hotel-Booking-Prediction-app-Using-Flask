@@ -6,7 +6,7 @@ import joblib
 app = Flask(__name__)
 
 # Load the trained model and feature scaler
-model = joblib.load('random_forest_model')
+model = joblib.load('random_forest_model.joblib')
 scaler = joblib.load('scaler')
 
 @app.route('/')
