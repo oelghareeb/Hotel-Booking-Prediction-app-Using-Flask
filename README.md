@@ -15,7 +15,6 @@ You can access the dataset on Kaggle via the following link:
 ## Project Structure
 - **app.py**: Flask application script containing API endpoints and model deployment logic.
 - **templates/**: Directory containing HTML templates for web interface.
-- **static/**: Directory for storing static files such as CSS and JavaScript.
 - **random_forest_model.pkl**: Serialized machine learning model (Random Forest Classifier).
 - **scaler.pkl**: Serialized scaler object for feature scaling.
 - **requirements.txt**: File listing all project dependencies.
