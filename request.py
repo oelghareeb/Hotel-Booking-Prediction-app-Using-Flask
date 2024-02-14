@@ -1,6 +1,21 @@
 import requests
 
+# Update the endpoint URL based on your Flask application
 url = 'http://localhost:5000/predict_api'
-r = requests.post(url,json={'radius_mean':17.99,'texture_mean':10.38,'area_mean':1001, 'concavity_mean':0.3001,'concave points_mean':0.1471,'area_se':153.4,'radius_worst':25.38,'texture_worst':17.33,'perimeter_worst':184.6,'area_worst':2019,'concavity_worst':0.7119,'concave points_worst':0.2654,'symmetry_worst':0.4601})
 
+# Modify the input data to match features relevant to hotel bookings
+input_data = {
+    'lead-time': 50,
+    'avg-price': 150,
+    'special-requests': 2,
+    'day': 15,
+    'month': 8,
+    'market-segment-online': 1,
+    'market-segment-offline': 0
+}
+
+# Send a POST request to the Flask API with the modified input data
+r = requests.post(url, json=input_data)
+
+# Print the response
 print(r.json())

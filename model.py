@@ -3,44 +3,57 @@
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 import warnings
 import pickle
 
 warnings.filterwarnings('ignore')
 
 ### Import Datset
-df = pd.read_csv("data_breast-cancer-wiscons.csv")
-# we change the class values (at the column number 2) from B to 0 and from M to 1
-df.iloc[:,1].replace('B', 0,inplace=True)
-df.iloc[:,1].replace('M', 1,inplace=True)
+df = pd.read_csv("booking.csv")
+# Changing datatype to Datetime
+df['date of reservation'] = pd.to_datetime(df['date of reservation'], errors='coerce')
 
-### Splitting Data
+# Extract day, month, and year from the date
+df['year'] = df['date of reservation'].dt.year
+df['month'] = df['date of reservation'].dt.month
+df['day'] = df['date of reservation'].dt.day
 
-X = df[['radius_mean','texture_mean','area_mean', 'concavity_mean','concave points_mean','area_se','radius_worst','texture_worst','perimeter_worst','area_worst','concavity_worst','concave points_worst','symmetry_worst']]
-y = df['diagnosis']
 
+# Dropping Booking_ID Column and date of reservation Column
+df.drop(columns=['Booking_ID','date of reservation'] , inplace=True)
+df.dropna(inplace=True)
+
+
+### Encoding columns
+encoding_columns = df.select_dtypes(include=["object"]).columns
+
+# Perform one-hot encoding using pandas.get_dummies
+df_encoded = pd.get_dummies(df, columns=encoding_columns)
+
+
+### Splitting Data and Data Preprocessing
+# Identify features and target
 from sklearn.model_selection import train_test_split
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size= 0.3, random_state=42)
-
-#### Data Preprocessing
-
 from sklearn.preprocessing import StandardScaler
 
+feature_cols = ['lead time', 'average price', 'special requests','day' ,'month', 'market segment type_Online', 'market segment type_Offline']
+X_selected = df_encoded[feature_cols]  # Selected Features
+y = df['booking status']  # Target
+
+# Standardize features
 scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X_selected)
 
-x_train = scaler.fit_transform(X_train)
-x_test = scaler.transform(X_test)
-
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.3, random_state=42)
 
 ##
-from sklearn.linear_model import LogisticRegression
-clf_lr = LogisticRegression()
-clf_lr.fit(x_train, y_train)
-predictions = clf_lr.predict(x_test)
+from sklearn.ensemble import RandomForestClassifier
+clf_RF = RandomForestClassifier()
+clf_RF.fit(X_train, y_train)
+predictions = clf_RF.predict(X_test)
 
+##
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
@@ -53,8 +66,8 @@ print("Confusion Matrix : \n\n" , confusion_matrix(predictions,y_test))
 print("Classification Report : \n\n" , classification_report(predictions,y_test),"\n")
 
 
-pickle.dump(clf_lr, open('model.pkl', 'wb'))
-pickle.dump(scaler, open('scaler.pkl', 'wb'))
+pickle.dump(clf_RF, open('random_forest_model', 'wb'))
+pickle.dump(scaler, open('scaler', 'wb'))
 
-model = pickle.load(open('model.pkl', 'rb'))
+model = pickle.load(open('random_forest_model', 'rb'))
 print(model)

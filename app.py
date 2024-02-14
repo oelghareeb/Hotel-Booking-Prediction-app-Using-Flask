@@ -1,45 +1,58 @@
-import numpy as np
-from flask import Flask, request, jsonify, render_template
-import pickle
+from flask import Flask, request, render_template
 from sklearn.preprocessing import StandardScaler
+import pandas as pd
+import joblib
 
-app = Flask(__name__,static_url_path='/static')
-model = pickle.load(open('model.pkl', 'rb'))
-scaler = pickle.load(open('scaler.pkl', 'rb'))
+app = Flask(__name__)
 
+# Load the trained model and feature scaler
+model = joblib.load('random_forest_model')
+scaler = joblib.load('scaler')
 
 @app.route('/')
 def home():
     return render_template('index.html')
 
-@app.route('/predict',methods=['POST'])
+@app.route('/registrazione', methods=['GET', 'POST'])
 def predict():
+    if request.method == 'POST':
+        # Get user input from the form
+        lead_time = int(request.form['lead-time'])
+        avg_price = int(request.form['avg-price'])
+        special_requests = int(request.form['special-requests'])
+        day = int(request.form['day'])
+        month = int(request.form['month'])
+        market_segment_online = 1 if 'market-segment-online' in request.form else 0
+        market_segment_offline = 1 if 'market-segment-offline' in request.form else 0
 
-    features = [float(x) for x in request.form.values()]
-    final_features = [np.array(features)]
-    final_features = scaler.transform(final_features)    
-    prediction = model.predict(final_features)
-    y_probabilities_test = model.predict_proba(final_features)
-    y_prob_success = y_probabilities_test[:, 1]
-    print("final features",final_features)
-    print("prediction:",prediction)
-    output = round(prediction[0], 2)
-    y_prob=round(y_prob_success[0], 3)
-    print(output)
+        # Preprocess the user input
+        user_input = pd.DataFrame({
+            'lead time': [lead_time],
+            'average price': [avg_price],
+            'special requests': [special_requests],
+            'day': [day],
+            'month': [month],
+            'market segment type_Online': [market_segment_online],
+            'market segment type_Offline': [market_segment_offline]
+        })
 
-    if output == 0:
-        return render_template('index.html', prediction_text='THE PATIENT IS MORE LIKELY TO HAVE A BENIGN CANCER WITH PROBABILITY VALUE  {}'.format(y_prob))
-    else:
-         return render_template('index.html', prediction_text='THE PATIENT IS MORE LIKELY TO HAVE A MALIGNANT CANCER WITH PROBABILITY VALUE  {}'.format(y_prob))
-        
-@app.route('/predict_api',methods=['POST'])
-def predict_api():
+        # Scale the features
+        user_input_scaled = scaler.transform(user_input)
 
-    data = request.get_json(force=True)
-    prediction = model.predict([np.array(list(data.values()))])
+        # Make predictions
+        prediction = model.predict(user_input_scaled)
 
-    output = prediction[0]
-    return jsonify(output)
+        # Display prediction result
+        if prediction == 0:
+            result = 'Booking Not Cancelled'
+        else:
+            result = 'Booking Cancelled'
 
-if __name__ == "__main__":
+        # Return the result to the client
+        return render_template('result.html', prediction=result)
+
+    # If it's a GET request, render the same page (redirects to the home page)
+    return render_template('index.html')
+
+if __name__ == '__main__':
     app.run(debug=True)
