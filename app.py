@@ -1,13 +1,17 @@
 from flask import Flask, request, render_template
 from sklearn.preprocessing import StandardScaler
 import pandas as pd
-import joblib
+import pickle
 
 app = Flask(__name__)
 
 # Load the trained model and feature scaler
-model = joblib.load('random_forest_model.joblib')
-scaler = joblib.load('scaler')
+with open('random_forest_model.pkl', 'rb') as file:
+    model = pickle.load(file)
+
+# Load the scaler using pickle
+with open('scaler.pkl', 'rb') as file:
+    scaler = pickle.load(file)
 
 @app.route('/')
 def home():

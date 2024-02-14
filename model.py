@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import warnings
 import pickle
-import joblib
+import pickle
 
 warnings.filterwarnings('ignore')
 
@@ -66,6 +66,16 @@ print("Confusion Matrix : \n\n" , confusion_matrix(predictions,y_test))
 
 print("Classification Report : \n\n" , classification_report(predictions,y_test),"\n")
 
+with open('random_forest_model.pkl', 'wb') as file:
+    pickle.dump(clf_RF, file)
 
-model = pickle.load(open('random_forest_model.joblib', 'rb'))
-print(model)
+# Save the scaler using pickle
+with open('scaler.pkl', 'wb') as file:
+    pickle.dump(scaler, file)
+
+with open('random_forest_model.pkl', 'rb') as file:
+    model = pickle.load(file)
+
+# Load the scaler using pickle
+with open('scaler.pkl', 'rb') as file:
+    scaler = pickle.load(file)
